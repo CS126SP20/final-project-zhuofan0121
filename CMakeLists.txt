@@ -86,4 +86,24 @@ if(NOT catch2_POPULATED)
     target_include_directories(catch2 INTERFACE ${catch2_SOURCE_DIR}/single_include)
 endif()
 
+# Face detecting library.
+FetchContent_Declare(
+        libfacedetection
+        GIT_REPOSITORY https://github.com/ShiqiYu/libfacedetection
+)
+
+# Adds face detecting library.
+#FetchContent_GetProperties(libfacedetection)
+#if(NOT libfacedetection_POPULATED)
+#    FetchContent_Populate(libfacedetection)
+#    add_subdirectory(${libfacedetection_SOURCE_DIR} ${libfacedetection_BINARY_DIR})
+#endif()
+
+FetchContent_GetProperties(libfacedetection)
+if(NOT libfacedetection_POPULATED)
+    FetchContent_Populate(libfacedetection)
+    add_library(libfacedetection INTERFACE)
+    target_include_directories(libfacedetection INTERFACE ${libfacedetection_SOURCE_DIR}/src)
+endif()
+
 # Add more CMake libraries here ...

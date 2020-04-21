@@ -3,6 +3,9 @@
 #include "my_app.h"
 
 #include <cinder/app/App.h>
+#include <facedetectcnn.h>
+#include <facedetectcnn-model.cpp>
+#include <facedetectcnn.cpp>
 
 
 namespace myapp {
@@ -11,7 +14,9 @@ using cinder::app::KeyEvent;
 
 MyApp::MyApp() { }
 
-void MyApp::setup() { }
+void MyApp::setup() {
+
+}
 
 void MyApp::update() { }
 

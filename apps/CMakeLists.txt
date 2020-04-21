@@ -12,8 +12,8 @@ ci_make_app(
     APP_NAME    cinder-myapp
     CINDER_PATH ${CINDER_PATH}
     SOURCES     ${SOURCE_LIST}
-    LIBRARIES   mylibrary
-    BLOCKS
+    LIBRARIES   mylibrary libfacedetection
+    BLOCKS Cinder-Notifications
 )
 
 target_compile_features(cinder-myapp PRIVATE cxx_std_14)
