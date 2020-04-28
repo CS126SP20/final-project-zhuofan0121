@@ -9,6 +9,7 @@ Read [this document](https://cliutils.gitlab.io/modern-cmake/chapters/basics/str
 layout.
 
 **Author**: Zhuofan Jia - [`zhuofan7@illinois.edu`](mailto:zhuofan7@illinois.edu)
+
 ---
 
 **Project Overview**
