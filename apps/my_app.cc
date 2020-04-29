@@ -21,6 +21,8 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 
+//#include "CinderOpenCV.h"
+
 namespace myapp {
 
 using cinder::app::KeyEvent;
@@ -57,8 +59,12 @@ void MyApp::setup() {
 
 //  cinder::gl::Texture texture = cinder::loadImage( "image.jpg" );
    */
-
+  //cap.open(0);
   cv::namedWindow("edges",1);
+
+//  auto size = this->getWindowSize();
+//  fCaptureDev = Capture::create(size.x, size.y);
+//  fCaptureDev->start();
 
 }
 
@@ -97,9 +103,22 @@ void MyApp::draw() {
    */
 
   imshow("edges", edges);
+  //cv::imread("test-photo.jpg", 1);
+
 
 }
 
-void MyApp::keyDown(KeyEvent event) { }
+void MyApp::keyDown(KeyEvent event) {
+  if( event.getChar() == 'f' ) {
+    // Toggle full screen when the user presses the 'f' key.
+    setFullScreen( ! isFullScreen() );
+  }
+  if (event.getCode() == KeyEvent::KEY_ESCAPE) {
+    if( isFullScreen() )
+      setFullScreen( false );
+    else
+      quit();
+  }
+}
 
 }  // namespace myapp
