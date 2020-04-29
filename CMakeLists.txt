@@ -17,16 +17,17 @@ project(FinalProject
         DESCRIPTION "CS 126 Final Project"
         LANGUAGES CXX)
 
+find_package(OpenCV REQUIRED)
+add_library(opencv INTERFACE)
+include_directories(${OpenCV_INCLUDE_DIRS})
+target_link_libraries(opencv INTERFACE ${OpenCV_LIBS})
+
 find_package(facedetection REQUIRED)
 if(facedetection_FOUND)
     include_directories(${facedetection_INCLUDE_DIRS})
     target_link_libraries(facedetection INTERFACE ${facedetection_LIBS})
 endif()
 
-find_package(OpenCV REQUIRED) # after project()
-add_library(opencv INTERFACE)
-include_directories(${OpenCV_INCLUDE_DIRS})
-target_link_libraries(opencv INTERFACE ${OpenCV_LIBS})
 
 include(ExternalProject)
 # Optionally set things like CMAKE_CXX_STANDARD, CMAKE_POSITION_INDEPENDENT_CODE here
