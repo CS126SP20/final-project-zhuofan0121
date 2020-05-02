@@ -12,3 +12,8 @@
    - Enabled VideoCapture
    - Generated a video consisting edges of every frame
    - Still need to integrate face-detection
+ 
+ - **5/1/20** Implemented face detection
+   - Found eyes, nose, and mouth from face
+   - Drew rectangles on them
+   - Still need to debug

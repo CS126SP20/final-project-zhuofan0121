@@ -42,6 +42,7 @@ if I can make the mask automatically added.
 I will be using a face detection library to detect face in the image:
 [link to external library.](https://github.com/ShiqiYu/libfacedetection)
 Here is [link to OpenCV.](https://github.com/cinder/Cinder-OpenCV)
+[another link](https://github.com/opencv/opencv)
 
 **Rough Timeline**
 
