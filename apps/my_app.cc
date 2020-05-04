@@ -48,18 +48,6 @@ MyApp::MyApp() { }
 void MyApp::setup() {
   /*
   rph::NotificationManager::getInstance()->add("Hello, World!", 10);
-
-  mImage = loadImage(loadAsset("image.png"));
-  mImageOutput = cinder::Surface32f(mImage.getWidth(), mImage.getHeight(), false);
-
-  mContrast = 0.f;
-  mContrastOld = -1.f;
-  mBrightness = 0.f;
-  mBrightnessOld = -1.f;
-
-  mParams.addParam("Contrast", &mContrast, "min=-0.5 max=1.0 step=0.01");
-  mParams.addParam("Brightness", &mBrightness, "min=-0.5 max=0.5 step=0.01");
-
    */
   //cap.open(0);
   //cv::namedWindow("edges",1);
@@ -81,20 +69,18 @@ void MyApp::setup() {
                         */
 
 
-  mImage = loadImage( loadAsset("image -1.png") );
-  mFaceCC.load( getAssetPath( "haarcascade_frontalface_alt.xml" ).string() );
+  mImage = loadImage(loadAsset("test-faces.jpg"));
+  mFaceCC.load(getAssetPath("haarcascade_frontalface_alt.xml").string());
 
-  cv::Mat cvImage( toOcv( mImage, CV_8UC1 ) );
+  cv::Mat cvImage(toOcv(mImage, CV_8UC1));
   std::vector<cv::Rect> faces;
-  mFaceCC.detectMultiScale( cvImage, faces );
+  mFaceCC.detectMultiScale(cvImage, faces);
   std::vector<cv::Rect>::const_iterator faceIter;
-  for ( faceIter = faces.begin(); faceIter != faces.end(); ++faceIter ) {
-    ci::Rectf faceRect( cinder::fromOcv( *faceIter ) );
-    mFaces.push_back( faceRect );
+  for (faceIter = faces.begin(); faceIter != faces.end(); ++faceIter) {
+    ci::Rectf faceRect(cinder::fromOcv(*faceIter));
+    mFaces.push_back(faceRect);
   }
-
-  auto img = loadImage( loadAsset( "image -1.png" ) );
-  mTex = cinder::gl::Texture2d::create( img );
+  mTex = cinder::gl::Texture2d::create(mImage);
 }
 
 void MyApp::update() {
@@ -154,8 +140,6 @@ void MyApp::update() {
     }
   }
   mElabImage.copyTo(image);
-  //cv::imshow("Extracted Frame", image);
-
    */
 
   cv::Mat frame;
@@ -163,8 +147,6 @@ void MyApp::update() {
   cv::cvtColor(frame, edges, cv::COLOR_BGR2GRAY);
   cv::GaussianBlur(edges, edges, cv::Size(7,7), 1.5, 1.5);
   cv::Canny(edges, edges, 0, 30, 3);
-
-
 }
 
 void MyApp::draw() {
@@ -173,39 +155,31 @@ void MyApp::draw() {
 
   /*
   rph::NotificationManager::getInstance()->draw();
-
-  vec2 center = getWindowCenter();
-  float r = 100;
-  ci::gl::color( ci::Color( 1, 0, 0 ) ); // red
-  ci::gl::drawSolidCircle( center + vec2( -r, r ), r );
-  ci::gl::color( ci::Color( 0, 1, 0 ) ); // green
-  ci::gl::drawSolidCircle( center + vec2( r, r ), r );
-  ci::gl::color( ci::Color( 0, 0, 1 ) ); // blue
-  ci::gl::drawSolidCircle( center + vec2( 0, -0.73 * r ), r );
    */
-
   imshow("edges", edges);
 
-  cinder::gl::color( cinder::Color::white() );
+  cinder::gl::color(cinder::Color::white());
   cinder::gl::draw(mTex);
-  cinder::gl::color( cinder::ColorA( 1.f, 0.f, 0.f, 0.45f ) );
+  cinder::gl::color(cinder::ColorA(1.f, 0.f, 0.f, 0.45f));
   std::vector<ci::Rectf>::const_iterator faceIter;
-  for (faceIter = mFaces.begin(); faceIter != mFaces.end(); ++faceIter ) {
-    cinder::gl::drawStrokedRect( *faceIter, 10);
+  for (faceIter = mFaces.begin(); faceIter != mFaces.end(); ++faceIter) {
+    cinder::gl::drawStrokedRect(*faceIter, 10);
   }
-
 }
 
 void MyApp::keyDown(KeyEvent event) {
-  if(event.getChar() == 'f') {
-    // Toggle full screen when the user presses the 'f' key.
-    setFullScreen(! isFullScreen());
+  // Toggle full screen when the user presses the 'f' key.
+  if (event.getChar() == 'f') {
+    setFullScreen(!isFullScreen());
   }
+
+  // Quit full screen or quit app when the user presses the 'esc' key.
   if (event.getCode() == KeyEvent::KEY_ESCAPE) {
-    if(isFullScreen())
+    if (isFullScreen()) {
       setFullScreen(false);
-    else
+    } else {
       quit();
+    }
   }
 }
 

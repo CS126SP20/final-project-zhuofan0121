@@ -17,3 +17,9 @@
    - Found eyes, nose, and mouth from face
    - Drew rectangles on them
    - Still need to debug
+   
+ - **5/3/20** Figured out how to navigate between Cinder & OpenCV
+   - Successfully drew rectangles on images with human faces
+   - Implemented another GUI to show "edges" of frames captured by camera
+   - Still need to figure out cinder's "capture" method
+   - Also need to work on adding masks
