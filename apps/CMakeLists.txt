@@ -13,7 +13,7 @@ ci_make_app(
     CINDER_PATH ${CINDER_PATH}
     SOURCES     ${SOURCE_LIST}
     LIBRARIES   mylibrary libfacedetection
-    BLOCKS Cinder-Notifications opencv
+    BLOCKS Cinder-Notifications opencv Cinder-OpenCV3
 )
 
 target_compile_features(cinder-myapp PRIVATE cxx_std_14)

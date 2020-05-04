@@ -14,13 +14,20 @@
 #include <vector>
 #include <string>
 
+#include "CinderOpenCV.h"
+#include "cinder/gl/Texture.h"
+#include "cinder/Capture.h"
+
+#include "cinder/Surface.h"
+#include "cinder/ImageIo.h"
+
 namespace myapp {
 
 using cinder::app::KeyEvent;
 using std::vector;
 
-cv::VideoCapture capture(0);
-//cv::Mat edges;
+cv::VideoCapture cap(0);
+cv::Mat edges;
 
 cv::CascadeClassifier mFaceDetector;
 cv::CascadeClassifier mEyeDetector;
@@ -29,6 +36,12 @@ cv::CascadeClassifier mNoseDetector;
 
 float scaleFactor = 3.0f;
 cv::Mat image;
+
+cinder::Surface8u mImage;
+cv::CascadeClassifier  mFaceCC;
+std::vector<ci::Rectf>  mFaces;
+
+cinder::gl::Texture2dRef mTex;
 
 MyApp::MyApp() { }
 
@@ -47,11 +60,10 @@ void MyApp::setup() {
   mParams.addParam("Contrast", &mContrast, "min=-0.5 max=1.0 step=0.01");
   mParams.addParam("Brightness", &mBrightness, "min=-0.5 max=0.5 step=0.01");
 
-//  cinder::gl::Texture texture = cinder::loadImage( "image.jpg" );
    */
   //cap.open(0);
   //cv::namedWindow("edges",1);
-  cv::namedWindow("Extracted Frame");
+  //cv::namedWindow("Extracted Frame");
 
   /*
   if (mFaceDetector.empty())
@@ -68,26 +80,25 @@ void MyApp::setup() {
                         "/blocks/opencv_contrib/modules/face/data/cascades/haarcascade_mcs_mouth.xml");
                         */
 
-  mFaceDetector.load("/usr/local/Cellar/opencv/4.3.0/share/opencv4"
-                     "/haarcascades/haarcascade_frontalface_default.xml");
-  mEyeDetector.load("/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac"
-                    "/blocks/opencv_contrib/modules/face/data/cascades/haarcascade_mcs_eyepair_big.xml");
-  mEyeDetector.load("/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac"
-                    "/blocks/opencv_contrib/modules/face/data/cascades/haarcascade_mcs_nose.xml");
-  mMouthDetector.load("/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac"
-                      "/blocks/opencv_contrib/modules/face/data/cascades/haarcascade_mcs_mouth.xml");
 
+  mImage = loadImage( loadAsset("image -1.png") );
+  mFaceCC.load( getAssetPath( "haarcascade_frontalface_alt.xml" ).string() );
 
+  cv::Mat cvImage( toOcv( mImage, CV_8UC1 ) );
+  std::vector<cv::Rect> faces;
+  mFaceCC.detectMultiScale( cvImage, faces );
+  std::vector<cv::Rect>::const_iterator faceIter;
+  for ( faceIter = faces.begin(); faceIter != faces.end(); ++faceIter ) {
+    ci::Rectf faceRect( cinder::fromOcv( *faceIter ) );
+    mFaces.push_back( faceRect );
+  }
+
+  auto img = loadImage( loadAsset( "image -1.png" ) );
+  mTex = cinder::gl::Texture2d::create( img );
 }
 
 void MyApp::update() {
   /*
-  if (mContrastOld != mContrast || mBrightnessOld != mBrightness) {
-    float c = 1.f + mContrast;
-//    Surface32f::IterpixelIter = mImage.getIter();
-//    Surface32f::IterpixelOutIter = mImageOutput.getIter();
-  }
-   */
   cv::Mat frame;
   capture >> frame;
   cv::Mat mElabImage;
@@ -145,18 +156,20 @@ void MyApp::update() {
   mElabImage.copyTo(image);
   //cv::imshow("Extracted Frame", image);
 
-  /*
+   */
+
+  cv::Mat frame;
   cap >> frame; // get a new frame from camera
   cv::cvtColor(frame, edges, cv::COLOR_BGR2GRAY);
   cv::GaussianBlur(edges, edges, cv::Size(7,7), 1.5, 1.5);
   cv::Canny(edges, edges, 0, 30, 3);
-   */
+
 
 }
 
 void MyApp::draw() {
   cinder::gl::clear();
-  cv::imshow("Extracted Frame", image);
+  //cv::imshow("Extracted Frame", image);
 
   /*
   rph::NotificationManager::getInstance()->draw();
@@ -171,8 +184,15 @@ void MyApp::draw() {
   ci::gl::drawSolidCircle( center + vec2( 0, -0.73 * r ), r );
    */
 
-  //imshow("edges", edges);
+  imshow("edges", edges);
 
+  cinder::gl::color( cinder::Color::white() );
+  cinder::gl::draw(mTex);
+  cinder::gl::color( cinder::ColorA( 1.f, 0.f, 0.f, 0.45f ) );
+  std::vector<ci::Rectf>::const_iterator faceIter;
+  for (faceIter = mFaces.begin(); faceIter != mFaces.end(); ++faceIter ) {
+    cinder::gl::drawStrokedRect( *faceIter, 10);
+  }
 
 }
 
