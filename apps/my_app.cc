@@ -23,8 +23,9 @@
 namespace myapp {
 
 using cinder::app::KeyEvent;
-using std::vector;
 using cv::Mat;
+using std::string;
+using std::vector;
 
 cv::VideoCapture cap(0);
 cv::Mat edges;
@@ -60,14 +61,24 @@ vector<cv::Rect> mouths;
 
 float scalingFactor = 0.75;
 
-MyApp::MyApp() { }
+vector<string> mask_paths;
+int mask_index;
+
+bool draw_rect = true;
+bool draw_mask = true;
+
+MyApp::MyApp() {}
 
 void MyApp::setup() {
   mFaceDetector.load(getAssetPath("haarcascade_frontalface_alt.xml").string());
-  mNoseDetector.load("/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac"
-                     "/blocks/opencv_contrib/modules/face/data/cascades/haarcascade_mcs_nose.xml");
-  mMouthDetector.load("/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac"
-                      "/blocks/opencv_contrib/modules/face/data/cascades/haarcascade_mcs_mouth.xml");
+  mNoseDetector.load(
+      "/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac"
+      "/blocks/opencv_contrib/modules/face/data/cascades/"
+      "haarcascade_mcs_nose.xml");
+  mMouthDetector.load(
+      "/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac"
+      "/blocks/opencv_contrib/modules/face/data/cascades/"
+      "haarcascade_mcs_mouth.xml");
 
   if (!cap.isOpened()) {
     std::cerr << "Error opening camera. Exiting!" << std::endl;
@@ -78,11 +89,30 @@ void MyApp::setup() {
   noses.clear();
   mouths.clear();
 
-  mask = cv::imread("/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac"
-                    "/my-projects/final-project-zhuofan0121/assets/mask.jpg");
+  mask = cv::imread(
+      "/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac/my-projects"
+      "/final-project-zhuofan0121/assets/mask-new12/mask-new11.jpg");
   if (!mask.data) {
     std::cerr << "Error loading mask image. Exiting!" << std::endl;
   }
+
+  string temp =
+      "/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac/my-projects/"
+      "final-project-zhuofan0121/assets/mask-new12/";
+  mask_paths.emplace_back(temp + "mask.jpg");
+  mask_paths.emplace_back(temp + "mask-new.jpg");
+  mask_paths.emplace_back(temp + "mask-new2.jpg");
+  mask_paths.emplace_back(temp + "mask-new3.jpg");
+  mask_paths.emplace_back(temp + "mask-new4.jpg");
+  mask_paths.emplace_back(temp + "mask-new5.jpg");
+  mask_paths.emplace_back(temp + "mask-new6.jpg");
+  mask_paths.emplace_back(temp + "mask-new7.jpg");
+  mask_paths.emplace_back(temp + "mask-new8.jpg");
+  mask_paths.emplace_back(temp + "mask-new9.jpg");
+  mask_paths.emplace_back(temp + "mask-new10.jpg");
+  mask_paths.emplace_back(temp + "mask-new11.jpg");
+  mask_paths.emplace_back(temp + "mask-new12.jpg");
+  mask_paths.emplace_back(temp + "mask-new13.jpeg");
 
   /*
   rph::NotificationManager::getInstance()->add("Hello, World!", 10);
@@ -241,23 +271,29 @@ void MyApp::draw() {
 
 
   for (int i = 0; i < faces2.size(); i++) {
-    cv::Rect faceRect(faces2[i].x, faces2[i].y, faces2[i].width, faces2[i].height);
-    cv::rectangle(frame, faceRect, CV_RGB(0,255,0), 2);
+    if (draw_rect) {
+      cv::Rect faceRect(faces2[i].x, faces2[i].y, faces2[i].width,
+                        faces2[i].height);
+      cv::rectangle(frame, faceRect, CV_RGB(0, 255, 0), 2);
+    }
+    if (draw_mask) {
+      int x = faces2[i].x + int(0.1 * faces2[i].width);
+      int y = faces2[i].y + int(0.5 * faces2[i].height);
+      // int y = mouths[i].y + int(0.0 * mouths[i].height);
+      int w = int(0.8 * faces2[i].width);
+      int h = int(0.5 * faces2[i].height);
 
-    int x = faces2[i].x - int(0.0 * faces2[i].width);
-    int y = faces2[i].y + int(0.5 * faces2[i].height);
-    //int y = mouths[i].y + int(0.0 * mouths[i].height);
-    int w = int(1.3 * faces2[i].width);
-    int h = int(0.6 * faces2[i].height);
-
-    frameROI = frame(cv::Rect(x, y, w, h));
-    cv::resize(mask, faceMaskSmall, cv::Size(w,h));
-    cvtColor(faceMaskSmall, grayMaskSmall, CV_BGR2GRAY);
-    threshold(grayMaskSmall, grayMaskSmallThresh, 230, 255, CV_THRESH_BINARY_INV);
-    bitwise_not(grayMaskSmallThresh, grayMaskSmallThreshInv);
-    bitwise_and(faceMaskSmall, faceMaskSmall, maskedFace, grayMaskSmallThresh);
-    bitwise_and(frameROI, frameROI, maskedFrame, grayMaskSmallThreshInv);
-    add(maskedFace, maskedFrame, frame(cv::Rect(x, y, w, h)));
+      frameROI = frame(cv::Rect(x, y, w, h));
+      cv::resize(mask, faceMaskSmall, cv::Size(w, h));
+      cvtColor(faceMaskSmall, grayMaskSmall, CV_BGR2GRAY);
+      threshold(grayMaskSmall, grayMaskSmallThresh, 230, 255,
+                CV_THRESH_BINARY_INV);
+      bitwise_not(grayMaskSmallThresh, grayMaskSmallThreshInv);
+      bitwise_and(faceMaskSmall, faceMaskSmall, maskedFace,
+                  grayMaskSmallThresh);
+      bitwise_and(frameROI, frameROI, maskedFrame, grayMaskSmallThreshInv);
+      add(maskedFace, maskedFrame, frame(cv::Rect(x, y, w, h)));
+    }
   }
 
   cinder::Surface mImageOutput = cinder::Surface(cinder::fromOcv(frame));
@@ -286,6 +322,25 @@ void MyApp::keyDown(KeyEvent event) {
     } else {
       quit();
     }
+  }
+
+  // Change to a different mask when the user presses the 'c' key.
+  if (event.getChar() == 'c') {
+    mask = cv::imread(mask_paths[mask_index]);
+    if (!mask.data) {
+      std::cerr << "Error loading mask image. Exiting!" << std::endl;
+    }
+    mask_index = (mask_index + 1) % (int)mask_paths.size();
+  }
+
+  // Toggle rectangle on face when the user presses the 'r' key.
+  if (event.getChar() == 'r') {
+    draw_rect = !draw_rect;
+  }
+
+  // Toggle mask when the user presses the 'm' key.
+  if (event.getChar() == 'm') {
+    draw_mask = !draw_mask;
   }
 }
 
