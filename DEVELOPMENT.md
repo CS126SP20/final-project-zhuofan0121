@@ -33,3 +33,4 @@
    - Figured out reason of resize's bug: mask image contains too much white margin
    - Tried to find parameters for the proper position of mask on face
    - Added several toggles to control drawing rectangle and mask
+   - Included the "edge" sub-functionality

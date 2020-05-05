@@ -12,6 +12,8 @@
 
 #include "cinder/Capture.h"
 
+//#include "cinder/params/Params.h"
+
 namespace myapp {
 
 using cv::Mat;
@@ -43,7 +45,9 @@ class MyApp : public cinder::app::App {
   cv::Mat image;
 
   cinder::Surface8u mImage;
-  cv::CascadeClassifier mFaceCC;
+  // cv::CascadeClassifier mFaceCC;
+
+  // cinder::params::InterfaceGl mParams;
 };
 
 }  // namespace myapp

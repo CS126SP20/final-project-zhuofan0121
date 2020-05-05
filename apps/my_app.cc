@@ -23,17 +23,17 @@ using std::vector;
 
 // float scaleFactor = 3.0f;
 
-vector<ci::Rectf>  mFaces;
+// vector<ci::Rectf>  mFaces;
 
 cinder::gl::Texture2dRef mTex;
 
 cinder::CaptureRef fCaptureDev;
 cinder::gl::TextureRef fGlFrame;
-vector<cv::Rect> faces;
+// vector<cv::Rect> faces;
 
 vector<cv::Rect> faces2;
-vector<cv::Rect> noses;
-vector<cv::Rect> mouths;
+// vector<cv::Rect> noses;
+// vector<cv::Rect> mouths;
 
 float scalingFactor = 0.75;
 
@@ -43,36 +43,10 @@ int mask_index;
 bool draw_rect = true;
 bool draw_mask = true;
 
-MyApp::MyApp() {}
+bool start_mask;
+bool start_edge;
 
-void MyApp::setup() {
-  mFaceDetector.load(getAssetPath("haarcascade_frontalface_alt.xml").string());
-  mNoseDetector.load(
-      "/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac"
-      "/blocks/opencv_contrib/modules/face/data/cascades/"
-      "haarcascade_mcs_nose.xml");
-  mMouthDetector.load(
-      "/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac"
-      "/blocks/opencv_contrib/modules/face/data/cascades/"
-      "haarcascade_mcs_mouth.xml");
-
-  cap = cv::VideoCapture(0);
-  if (!cap.isOpened()) {
-    std::cerr << "Error opening camera. Exiting!" << std::endl;
-    quit();
-  }
-  mFaces.clear();
-  faces.clear();
-  noses.clear();
-  mouths.clear();
-
-  mask = cv::imread(
-      "/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac/my-projects"
-      "/final-project-zhuofan0121/assets/mask-new12/mask-new11.jpg");
-  if (!mask.data) {
-    std::cerr << "Error loading mask image. Exiting!" << std::endl;
-  }
-
+MyApp::MyApp() {
   string temp =
       "/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac/my-projects/"
       "final-project-zhuofan0121/assets/mask-new12/";
@@ -90,6 +64,36 @@ void MyApp::setup() {
   mask_paths.emplace_back(temp + "mask-new11.jpg");
   mask_paths.emplace_back(temp + "mask-new12.jpg");
   mask_paths.emplace_back(temp + "mask-new13.jpeg");
+}
+
+void MyApp::setup() {
+  // mParams = cinder::params::InterfaceGl("Functions", ci::vec2(200,400));
+  mFaceDetector.load(getAssetPath("haarcascade_frontalface_alt.xml").string());
+  cap = cv::VideoCapture(0);
+  if (!cap.isOpened()) {
+    std::cerr << "Error opening camera. Exiting!" << std::endl;
+    quit();
+  }
+  mask = cv::imread(
+      "/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac/my-projects"
+      "/final-project-zhuofan0121/assets/mask-new12/mask-new11.jpg");
+  if (!mask.data) {
+    std::cerr << "Error loading mask image. Exiting!" << std::endl;
+  }
+
+  //  mNoseDetector.load(
+  //      "/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac"
+  //      "/blocks/opencv_contrib/modules/face/data/cascades/"
+  //      "haarcascade_mcs_nose.xml");
+  //  mMouthDetector.load(
+  //      "/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac"
+  //      "/blocks/opencv_contrib/modules/face/data/cascades/"
+  //      "haarcascade_mcs_mouth.xml");
+
+  //  mFaces.clear();
+  //  faces.clear();
+  //  noses.clear();
+  //  mouths.clear();
 
   /*
   rph::NotificationManager::getInstance()->add("Hello, World!", 10);
@@ -110,11 +114,10 @@ void MyApp::setup() {
                         "/blocks/opencv_contrib/modules/face/data/cascades/haarcascade_mcs_mouth.xml");
                         */
 
-
-//  mImage = loadImage(loadAsset("test-faces.jpg"));
-  mFaceCC.load(getAssetPath("haarcascade_frontalface_alt.xml").string());
-//
-//  cv::Mat cvImage(toOcv(mImage, CV_8UC1));
+  //  mImage = loadImage(loadAsset("test-faces.jpg"));
+  //  mFaceCC.load(getAssetPath("haarcascade_frontalface_alt.xml").string());
+  //
+  //  cv::Mat cvImage(toOcv(mImage, CV_8UC1));
 //  std::vector<cv::Rect> faces;
 //  mFaceCC.detectMultiScale(cvImage, faces);
 //  std::vector<cv::Rect>::const_iterator faceIter;
@@ -132,26 +135,33 @@ void MyApp::setup() {
 
 void MyApp::update() {
   cap >> frame;
-  cv::resize(frame, frame, cv::Size(), scalingFactor, scalingFactor, cv::INTER_AREA);
-  cvtColor(frame, frameGray, CV_BGR2GRAY);
-  equalizeHist(frameGray, frameGray);
-  mFaceDetector.detectMultiScale(frameGray, faces2, 1.1, 2,
-      0|cv::CASCADE_SCALE_IMAGE, cv::Size(30, 30));
-  mNoseDetector.detectMultiScale(frameGray, noses, 1.1, 2,
-                                 0|cv::CASCADE_SCALE_IMAGE, cv::Size(30, 30));
-  mMouthDetector.detectMultiScale(frameGray, mouths, 1.1, 2,
-                                 0|cv::CASCADE_SCALE_IMAGE, cv::Size(30, 30));
+  if (start_mask) {
+    cv::resize(frame, frame, cv::Size(), scalingFactor, scalingFactor,
+               cv::INTER_AREA);
+    cvtColor(frame, frameGray, CV_BGR2GRAY);
+    equalizeHist(frameGray, frameGray);
+    mFaceDetector.detectMultiScale(frameGray, faces2, 1.1, 2,
+                                   0 | cv::CASCADE_SCALE_IMAGE,
+                                   cv::Size(30, 30));
+  }
 
-//  if (fCaptureDev->checkNewFrame()) {
-//    // Capture the current frame.
-//    const cinder::Surface8uRef rgbFrame = fCaptureDev->getSurface();
-//
-//    // Convert rgb -> gray -> cv::Mat
-//    // ocvGrayImage: every current Mat frame
-//    cv::Mat ocvGrayImage = toOcv(cinder::Channel(*rgbFrame));
-//    mFaceCC.detectMultiScale(ocvGrayImage, faces);
-//
-//    std::vector<cv::Rect>::const_iterator faceIter;
+  //  mNoseDetector.detectMultiScale(frameGray, noses, 1.1, 2,
+  //                                 0|cv::CASCADE_SCALE_IMAGE, cv::Size(30,
+  //                                 30));
+  //  mMouthDetector.detectMultiScale(frameGray, mouths, 1.1, 2,
+  //                                 0|cv::CASCADE_SCALE_IMAGE, cv::Size(30,
+  //                                 30));
+
+  //  if (fCaptureDev->checkNewFrame()) {
+  //    // Capture the current frame.
+  //    const cinder::Surface8uRef rgbFrame = fCaptureDev->getSurface();
+  //
+  //    // Convert rgb -> gray -> cv::Mat
+  //    // ocvGrayImage: every current Mat frame
+  //    cv::Mat ocvGrayImage = toOcv(cinder::Channel(*rgbFrame));
+  //    mFaceCC.detectMultiScale(ocvGrayImage, faces);
+  //
+  //    std::vector<cv::Rect>::const_iterator faceIter;
 //    for (faceIter = faces.begin(); faceIter != faces.end(); ++faceIter) {
 //      ci::Rectf faceRect(cinder::fromOcv(*faceIter));
 //      mFaces.push_back(faceRect);
@@ -219,71 +229,77 @@ void MyApp::update() {
   mElabImage.copyTo(image);
    */
 
-//  cv::Mat frame;
-//  cap >> frame; // get a new frame from camera
-//  cv::cvtColor(frame, edges, cv::COLOR_BGR2GRAY);
-//  cv::GaussianBlur(edges, edges, cv::Size(7,7), 1.5, 1.5);
-//  cv::Canny(edges, edges, 0, 30, 3);
+  if (start_edge) {
+    cv::cvtColor(frame, edges, cv::COLOR_BGR2GRAY);
+    cv::GaussianBlur(edges, edges, cv::Size(7, 7), 1.5, 1.5);
+    cv::Canny(edges, edges, 0, 30, 3);
+  }
 }
 
 void MyApp::draw() {
   cinder::gl::clear();
   cinder::gl::color(1, 1, 1);
-  //cinder::gl::draw(fGlFrame);
+  // mParams.draw();
+  // cinder::gl::draw(fGlFrame);
 
   //cv::imshow("Extracted Frame", image);
 
   /*
   rph::NotificationManager::getInstance()->draw();
    */
-//  imshow("edges", edges);
-//
-//  cinder::gl::color(cinder::Color::white());
-//  cinder::gl::draw(mTex);
-//  cinder::gl::color(cinder::ColorA(1.f, 0.f, 0.f, 0.45f));
-//  std::vector<ci::Rectf>::const_iterator faceIter;
-//  for (faceIter = mFaces.begin(); faceIter != mFaces.end(); ++faceIter) {
-//    cinder::gl::drawStrokedRect(*faceIter, 3);
-//  }
 
+  //  cinder::gl::color(cinder::Color::white());
+  //  cinder::gl::draw(mTex);
+  //  cinder::gl::color(cinder::ColorA(1.f, 0.f, 0.f, 0.45f));
+  //  std::vector<ci::Rectf>::const_iterator faceIter;
+  //  for (faceIter = mFaces.begin(); faceIter != mFaces.end(); ++faceIter) {
+  //    cinder::gl::drawStrokedRect(*faceIter, 3);
+  //  }
 
-  for (int i = 0; i < faces2.size(); i++) {
-    if (draw_rect) {
-      cv::Rect faceRect(faces2[i].x, faces2[i].y, faces2[i].width,
-                        faces2[i].height);
-      cv::rectangle(frame, faceRect, CV_RGB(0, 255, 0), 2);
+  if (start_mask) {
+    for (int i = 0; i < faces2.size(); i++) {
+      if (draw_rect) {
+        cv::Rect faceRect(faces2[i].x, faces2[i].y, faces2[i].width,
+                          faces2[i].height);
+        cv::rectangle(frame, faceRect, CV_RGB(0, 255, 0), 2);
+      }
+      if (draw_mask) {
+        int x = faces2[i].x + int(0.1 * faces2[i].width);
+        int y = faces2[i].y + int(0.5 * faces2[i].height);
+        // int y = mouths[i].y + int(0.0 * mouths[i].height);
+        int w = int(0.8 * faces2[i].width);
+        int h = int(0.5 * faces2[i].height);
+
+        frameROI = frame(cv::Rect(x, y, w, h));
+        cv::resize(mask, faceMaskSmall, cv::Size(w, h));
+        cvtColor(faceMaskSmall, grayMaskSmall, CV_BGR2GRAY);
+        threshold(grayMaskSmall, grayMaskSmallThresh, 230, 255,
+                  CV_THRESH_BINARY_INV);
+        bitwise_not(grayMaskSmallThresh, grayMaskSmallThreshInv);
+        bitwise_and(faceMaskSmall, faceMaskSmall, maskedFace,
+                    grayMaskSmallThresh);
+        bitwise_and(frameROI, frameROI, maskedFrame, grayMaskSmallThreshInv);
+        add(maskedFace, maskedFrame, frame(cv::Rect(x, y, w, h)));
+      }
     }
-    if (draw_mask) {
-      int x = faces2[i].x + int(0.1 * faces2[i].width);
-      int y = faces2[i].y + int(0.5 * faces2[i].height);
-      // int y = mouths[i].y + int(0.0 * mouths[i].height);
-      int w = int(0.8 * faces2[i].width);
-      int h = int(0.5 * faces2[i].height);
 
-      frameROI = frame(cv::Rect(x, y, w, h));
-      cv::resize(mask, faceMaskSmall, cv::Size(w, h));
-      cvtColor(faceMaskSmall, grayMaskSmall, CV_BGR2GRAY);
-      threshold(grayMaskSmall, grayMaskSmallThresh, 230, 255,
-                CV_THRESH_BINARY_INV);
-      bitwise_not(grayMaskSmallThresh, grayMaskSmallThreshInv);
-      bitwise_and(faceMaskSmall, faceMaskSmall, maskedFace,
-                  grayMaskSmallThresh);
-      bitwise_and(frameROI, frameROI, maskedFrame, grayMaskSmallThreshInv);
-      add(maskedFace, maskedFrame, frame(cv::Rect(x, y, w, h)));
-    }
+    cinder::Surface mImageOutput = cinder::Surface(cinder::fromOcv(frame));
+    cinder::gl::TextureRef mTexOutput =
+        cinder::gl::Texture2d::create(mImageOutput);
+    cinder::gl::color(1, 1, 1);
+    cinder::gl::draw(mTexOutput);
   }
 
-  cinder::Surface mImageOutput = cinder::Surface(cinder::fromOcv(frame));
-  cinder::gl::TextureRef mTexOutput = cinder::gl::Texture2d::create(mImageOutput);
-  cinder::gl::color(1, 1, 1);
-  cinder::gl::draw(mTexOutput);
+  if (start_edge) {
+    cinder::Surface mImageOutput = cinder::Surface(cinder::fromOcv(edges));
+    cinder::gl::TextureRef mTexOutput =
+        cinder::gl::Texture2d::create(mImageOutput);
+    cinder::gl::draw(mTexOutput);
+  }
 
-
-
-  mFaces.clear();
-  faces.clear();
+  //  mFaces.clear();
+  //  faces.clear();
   faces2.clear();
-
 }
 
 void MyApp::keyDown(KeyEvent event) {
@@ -318,6 +334,18 @@ void MyApp::keyDown(KeyEvent event) {
   // Toggle mask when the user presses the 'm' key.
   if (event.getChar() == 'm') {
     draw_mask = !draw_mask;
+  }
+
+  // Press 's' to start the main "put on mask" app.
+  if (event.getChar() == 's') {
+    start_mask = true;
+    start_edge = false;
+  }
+
+  // Press 'o' to start the sub "edge" app.
+  if (event.getChar() == 'o') {
+    start_mask = false;
+    start_edge = true;
   }
 }
 
