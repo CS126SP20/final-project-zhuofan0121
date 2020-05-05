@@ -2,19 +2,13 @@
 
 #include "my_app.h"
 
-#include <cinder/app/App.h>
 #include <opencv2/imgproc/types_c.h>
 #include <rph/NotificationManager.h>
 
-#include <opencv2/core.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/objdetect/objdetect.hpp>
 #include <string>
 #include <vector>
 
 #include "CinderOpenCV.h"
-#include "cinder/Capture.h"
 #include "cinder/ImageIo.h"
 #include "cinder/Surface.h"
 #include "cinder/gl/Texture.h"
@@ -27,19 +21,8 @@ using cv::Mat;
 using std::string;
 using std::vector;
 
-cv::VideoCapture cap(0);
-cv::Mat edges;
+// float scaleFactor = 3.0f;
 
-cv::CascadeClassifier mFaceDetector;
-cv::CascadeClassifier mEyeDetector;
-cv::CascadeClassifier mMouthDetector;
-cv::CascadeClassifier mNoseDetector;
-
-float scaleFactor = 3.0f;
-cv::Mat image;
-
-cinder::Surface8u mImage;
-cv::CascadeClassifier  mFaceCC;
 vector<ci::Rectf>  mFaces;
 
 cinder::gl::Texture2dRef mTex;
@@ -47,13 +30,6 @@ cinder::gl::Texture2dRef mTex;
 cinder::CaptureRef fCaptureDev;
 cinder::gl::TextureRef fGlFrame;
 vector<cv::Rect> faces;
-
-cv::Mat mask;
-
-Mat frame, frameGray;
-Mat frameROI, faceMaskSmall;
-Mat grayMaskSmall, grayMaskSmallThresh, grayMaskSmallThreshInv;
-Mat maskedFace, maskedFrame;
 
 vector<cv::Rect> faces2;
 vector<cv::Rect> noses;
@@ -80,6 +56,7 @@ void MyApp::setup() {
       "/blocks/opencv_contrib/modules/face/data/cascades/"
       "haarcascade_mcs_mouth.xml");
 
+  cap = cv::VideoCapture(0);
   if (!cap.isOpened()) {
     std::cerr << "Error opening camera. Exiting!" << std::endl;
     quit();

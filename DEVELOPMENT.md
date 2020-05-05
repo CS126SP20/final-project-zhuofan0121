@@ -23,3 +23,13 @@
    - Implemented another GUI to show "edges" of frames captured by camera
    - Still need to figure out cinder's "capture" method
    - Also need to work on adding masks
+   
+ - **5/4/20** Drew rectangle and added mask to face
+   - Successfully drew rectangles on faces in captured video
+   - Added mask to face during live video capture
+   - Still need to resize the mask
+   
+ - **5/5/20** 
+   - Figured out reason of resize's bug: mask image contains too much white margin
+   - Tried to find parameters for the proper position of mask on face
+   - Added several toggles to control drawing rectangle and mask
