@@ -9,15 +9,14 @@
 using cinder::app::App;
 using cinder::app::RendererGl;
 
-
 namespace myapp {
 
 const int kSamples = 8;
-const int kWidth = 800;
-const int kHeight = 800;
+const int kWidth = 1000;
+const int kHeight = 600;
 
 void SetUp(App::Settings* settings) {
-  //settings->setWindowSize(kWidth, kHeight);
+  settings->setWindowSize(kWidth, kHeight);
   settings->setTitle("My CS 126 Application");
 }
 

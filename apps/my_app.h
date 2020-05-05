@@ -12,8 +12,6 @@
 
 #include "cinder/Capture.h"
 
-//#include "cinder/params/Params.h"
-
 namespace myapp {
 
 using cv::Mat;
@@ -28,26 +26,14 @@ class MyApp : public cinder::app::App {
 
  private:
   cv::VideoCapture cap;
-
+  cv::CascadeClassifier mFaceDetector;
+  std::vector<cv::Rect> faces;
   Mat mask;
   Mat frame, frameGray;
   Mat frameROI, faceMaskSmall;
   Mat grayMaskSmall, grayMaskSmallThresh, grayMaskSmallThreshInv;
   Mat maskedFace, maskedFrame;
-
   Mat edges;
-
-  cv::CascadeClassifier mFaceDetector;
-  cv::CascadeClassifier mEyeDetector;
-  cv::CascadeClassifier mMouthDetector;
-  cv::CascadeClassifier mNoseDetector;
-
-  cv::Mat image;
-
-  cinder::Surface8u mImage;
-  // cv::CascadeClassifier mFaceCC;
-
-  // cinder::params::InterfaceGl mParams;
 };
 
 }  // namespace myapp
