@@ -39,13 +39,20 @@ cv::Mat image;
 
 cinder::Surface8u mImage;
 cv::CascadeClassifier  mFaceCC;
-std::vector<ci::Rectf>  mFaces;
+vector<ci::Rectf>  mFaces;
 
 cinder::gl::Texture2dRef mTex;
+
+cinder::CaptureRef fCaptureDev;
+cinder::gl::TextureRef fGlFrame;
+vector<cv::Rect> faces;
 
 MyApp::MyApp() { }
 
 void MyApp::setup() {
+  mFaces.clear();
+  faces.clear();
+
   /*
   rph::NotificationManager::getInstance()->add("Hello, World!", 10);
    */
@@ -69,21 +76,43 @@ void MyApp::setup() {
                         */
 
 
-  mImage = loadImage(loadAsset("test-faces.jpg"));
+//  mImage = loadImage(loadAsset("test-faces.jpg"));
   mFaceCC.load(getAssetPath("haarcascade_frontalface_alt.xml").string());
+//
+//  cv::Mat cvImage(toOcv(mImage, CV_8UC1));
+//  std::vector<cv::Rect> faces;
+//  mFaceCC.detectMultiScale(cvImage, faces);
+//  std::vector<cv::Rect>::const_iterator faceIter;
+//  for (faceIter = faces.begin(); faceIter != faces.end(); ++faceIter) {
+//    ci::Rectf faceRect(cinder::fromOcv(*faceIter));
+//    mFaces.push_back(faceRect);
+//  }
+//  mTex = cinder::gl::Texture2d::create(mImage);
 
-  cv::Mat cvImage(toOcv(mImage, CV_8UC1));
-  std::vector<cv::Rect> faces;
-  mFaceCC.detectMultiScale(cvImage, faces);
-  std::vector<cv::Rect>::const_iterator faceIter;
-  for (faceIter = faces.begin(); faceIter != faces.end(); ++faceIter) {
-    ci::Rectf faceRect(cinder::fromOcv(*faceIter));
-    mFaces.push_back(faceRect);
-  }
-  mTex = cinder::gl::Texture2d::create(mImage);
+  auto size = this->getWindowSize();
+  fCaptureDev = cinder::Capture::create(size[0], size[1]);
+  fCaptureDev->start();
+  fGlFrame = cinder::gl::Texture::create(size.x, size.y);
 }
 
 void MyApp::update() {
+  if (fCaptureDev->checkNewFrame()) {
+    // Capture the current frame.
+    const cinder::Surface8uRef rgbFrame = fCaptureDev->getSurface();
+
+    // Convert rgb -> gray -> cv::Mat
+    cv::Mat ocvGrayImage = toOcv(cinder::Channel(*rgbFrame));
+    mFaceCC.detectMultiScale(ocvGrayImage, faces);
+
+    std::vector<cv::Rect>::const_iterator faceIter;
+    for (faceIter = faces.begin(); faceIter != faces.end(); ++faceIter) {
+      ci::Rectf faceRect(cinder::fromOcv(*faceIter));
+      mFaces.push_back(faceRect);
+    }
+
+    // Get the frame in a format OpenGL can draw, i.e. load it to GPU.
+    fGlFrame->update(*rgbFrame);
+  }
   /*
   cv::Mat frame;
   capture >> frame;
@@ -142,29 +171,35 @@ void MyApp::update() {
   mElabImage.copyTo(image);
    */
 
-  cv::Mat frame;
-  cap >> frame; // get a new frame from camera
-  cv::cvtColor(frame, edges, cv::COLOR_BGR2GRAY);
-  cv::GaussianBlur(edges, edges, cv::Size(7,7), 1.5, 1.5);
-  cv::Canny(edges, edges, 0, 30, 3);
+//  cv::Mat frame;
+//  cap >> frame; // get a new frame from camera
+//  cv::cvtColor(frame, edges, cv::COLOR_BGR2GRAY);
+//  cv::GaussianBlur(edges, edges, cv::Size(7,7), 1.5, 1.5);
+//  cv::Canny(edges, edges, 0, 30, 3);
 }
 
 void MyApp::draw() {
   cinder::gl::clear();
+  cinder::gl::color(1, 1, 1);
+  cinder::gl::draw(fGlFrame);
+
   //cv::imshow("Extracted Frame", image);
 
   /*
   rph::NotificationManager::getInstance()->draw();
    */
-  imshow("edges", edges);
-
-  cinder::gl::color(cinder::Color::white());
-  cinder::gl::draw(mTex);
+//  imshow("edges", edges);
+//
+//  cinder::gl::color(cinder::Color::white());
+//  cinder::gl::draw(mTex);
   cinder::gl::color(cinder::ColorA(1.f, 0.f, 0.f, 0.45f));
   std::vector<ci::Rectf>::const_iterator faceIter;
   for (faceIter = mFaces.begin(); faceIter != mFaces.end(); ++faceIter) {
-    cinder::gl::drawStrokedRect(*faceIter, 10);
+    cinder::gl::drawStrokedRect(*faceIter, 3);
   }
+
+  mFaces.clear();
+  faces.clear();
 }
 
 void MyApp::keyDown(KeyEvent event) {
