@@ -3,28 +3,28 @@
 #include "my_app.h"
 
 #include <cinder/app/App.h>
+#include <opencv2/imgproc/types_c.h>
 #include <rph/NotificationManager.h>
+
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
-
-#include "cinder/gl/gl.h"
 #include <opencv2/imgproc.hpp>
 #include <opencv2/objdetect/objdetect.hpp>
-
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "CinderOpenCV.h"
-#include "cinder/gl/Texture.h"
 #include "cinder/Capture.h"
-
-#include "cinder/Surface.h"
 #include "cinder/ImageIo.h"
+#include "cinder/Surface.h"
+#include "cinder/gl/Texture.h"
+#include "cinder/gl/gl.h"
 
 namespace myapp {
 
 using cinder::app::KeyEvent;
 using std::vector;
+using cv::Mat;
 
 cv::VideoCapture cap(0);
 cv::Mat edges;
@@ -47,18 +47,46 @@ cinder::CaptureRef fCaptureDev;
 cinder::gl::TextureRef fGlFrame;
 vector<cv::Rect> faces;
 
+cv::Mat mask;
+
+Mat frame, frameGray;
+Mat frameROI, faceMaskSmall;
+Mat grayMaskSmall, grayMaskSmallThresh, grayMaskSmallThreshInv;
+Mat maskedFace, maskedFrame;
+
+vector<cv::Rect> faces2;
+vector<cv::Rect> noses;
+vector<cv::Rect> mouths;
+
+float scalingFactor = 0.75;
+
 MyApp::MyApp() { }
 
 void MyApp::setup() {
+  mFaceDetector.load(getAssetPath("haarcascade_frontalface_alt.xml").string());
+  mNoseDetector.load("/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac"
+                     "/blocks/opencv_contrib/modules/face/data/cascades/haarcascade_mcs_nose.xml");
+  mMouthDetector.load("/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac"
+                      "/blocks/opencv_contrib/modules/face/data/cascades/haarcascade_mcs_mouth.xml");
+
+  if (!cap.isOpened()) {
+    std::cerr << "Error opening camera. Exiting!" << std::endl;
+    quit();
+  }
   mFaces.clear();
   faces.clear();
+  noses.clear();
+  mouths.clear();
+
+  mask = cv::imread("/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac"
+                    "/my-projects/final-project-zhuofan0121/assets/mask.jpg");
+  if (!mask.data) {
+    std::cerr << "Error loading mask image. Exiting!" << std::endl;
+  }
 
   /*
   rph::NotificationManager::getInstance()->add("Hello, World!", 10);
    */
-  //cap.open(0);
-  //cv::namedWindow("edges",1);
-  //cv::namedWindow("Extracted Frame");
 
   /*
   if (mFaceDetector.empty())
@@ -68,7 +96,7 @@ void MyApp::setup() {
     mEyeDetector.load("/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac"
                       "/blocks/opencv_contrib/modules/face/data/cascades/haarcascade_mcs_eyepair_big.xml");
   if (mNoseDetector.empty())
-    mEyeDetector.load("/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac"
+    mNoseDetector.load("/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac"
                       "/blocks/opencv_contrib/modules/face/data/cascades/haarcascade_mcs_nose.xml");
   if (mMouthDetector.empty())
     mMouthDetector.load("/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac"
@@ -89,30 +117,43 @@ void MyApp::setup() {
 //  }
 //  mTex = cinder::gl::Texture2d::create(mImage);
 
-  auto size = this->getWindowSize();
-  fCaptureDev = cinder::Capture::create(size[0], size[1]);
-  fCaptureDev->start();
-  fGlFrame = cinder::gl::Texture::create(size.x, size.y);
+//  auto size = this->getWindowSize();
+//  fCaptureDev = cinder::Capture::create(size[0], size[1]);
+//  fCaptureDev->start();
+//  fGlFrame = cinder::gl::Texture::create(size.x, size.y);
 }
 
 void MyApp::update() {
-  if (fCaptureDev->checkNewFrame()) {
-    // Capture the current frame.
-    const cinder::Surface8uRef rgbFrame = fCaptureDev->getSurface();
+  cap >> frame;
+  cv::resize(frame, frame, cv::Size(), scalingFactor, scalingFactor, cv::INTER_AREA);
+  cvtColor(frame, frameGray, CV_BGR2GRAY);
+  equalizeHist(frameGray, frameGray);
+  mFaceDetector.detectMultiScale(frameGray, faces2, 1.1, 2,
+      0|cv::CASCADE_SCALE_IMAGE, cv::Size(30, 30));
+  mNoseDetector.detectMultiScale(frameGray, noses, 1.1, 2,
+                                 0|cv::CASCADE_SCALE_IMAGE, cv::Size(30, 30));
+  mMouthDetector.detectMultiScale(frameGray, mouths, 1.1, 2,
+                                 0|cv::CASCADE_SCALE_IMAGE, cv::Size(30, 30));
 
-    // Convert rgb -> gray -> cv::Mat
-    cv::Mat ocvGrayImage = toOcv(cinder::Channel(*rgbFrame));
-    mFaceCC.detectMultiScale(ocvGrayImage, faces);
+//  if (fCaptureDev->checkNewFrame()) {
+//    // Capture the current frame.
+//    const cinder::Surface8uRef rgbFrame = fCaptureDev->getSurface();
+//
+//    // Convert rgb -> gray -> cv::Mat
+//    // ocvGrayImage: every current Mat frame
+//    cv::Mat ocvGrayImage = toOcv(cinder::Channel(*rgbFrame));
+//    mFaceCC.detectMultiScale(ocvGrayImage, faces);
+//
+//    std::vector<cv::Rect>::const_iterator faceIter;
+//    for (faceIter = faces.begin(); faceIter != faces.end(); ++faceIter) {
+//      ci::Rectf faceRect(cinder::fromOcv(*faceIter));
+//      mFaces.push_back(faceRect);
+//    }
+//
+//    // Get the frame in a format OpenGL can draw, i.e. load it to GPU.
+//    fGlFrame->update(*rgbFrame);
+//  }
 
-    std::vector<cv::Rect>::const_iterator faceIter;
-    for (faceIter = faces.begin(); faceIter != faces.end(); ++faceIter) {
-      ci::Rectf faceRect(cinder::fromOcv(*faceIter));
-      mFaces.push_back(faceRect);
-    }
-
-    // Get the frame in a format OpenGL can draw, i.e. load it to GPU.
-    fGlFrame->update(*rgbFrame);
-  }
   /*
   cv::Mat frame;
   capture >> frame;
@@ -181,7 +222,7 @@ void MyApp::update() {
 void MyApp::draw() {
   cinder::gl::clear();
   cinder::gl::color(1, 1, 1);
-  cinder::gl::draw(fGlFrame);
+  //cinder::gl::draw(fGlFrame);
 
   //cv::imshow("Extracted Frame", image);
 
@@ -192,14 +233,44 @@ void MyApp::draw() {
 //
 //  cinder::gl::color(cinder::Color::white());
 //  cinder::gl::draw(mTex);
-  cinder::gl::color(cinder::ColorA(1.f, 0.f, 0.f, 0.45f));
-  std::vector<ci::Rectf>::const_iterator faceIter;
-  for (faceIter = mFaces.begin(); faceIter != mFaces.end(); ++faceIter) {
-    cinder::gl::drawStrokedRect(*faceIter, 3);
+//  cinder::gl::color(cinder::ColorA(1.f, 0.f, 0.f, 0.45f));
+//  std::vector<ci::Rectf>::const_iterator faceIter;
+//  for (faceIter = mFaces.begin(); faceIter != mFaces.end(); ++faceIter) {
+//    cinder::gl::drawStrokedRect(*faceIter, 3);
+//  }
+
+
+  for (int i = 0; i < faces2.size(); i++) {
+    cv::Rect faceRect(faces2[i].x, faces2[i].y, faces2[i].width, faces2[i].height);
+    cv::rectangle(frame, faceRect, CV_RGB(0,255,0), 2);
+
+    int x = faces2[i].x - int(0.0 * faces2[i].width);
+    int y = faces2[i].y + int(0.5 * faces2[i].height);
+    //int y = mouths[i].y + int(0.0 * mouths[i].height);
+    int w = int(1.3 * faces2[i].width);
+    int h = int(0.6 * faces2[i].height);
+
+    frameROI = frame(cv::Rect(x, y, w, h));
+    cv::resize(mask, faceMaskSmall, cv::Size(w,h));
+    cvtColor(faceMaskSmall, grayMaskSmall, CV_BGR2GRAY);
+    threshold(grayMaskSmall, grayMaskSmallThresh, 230, 255, CV_THRESH_BINARY_INV);
+    bitwise_not(grayMaskSmallThresh, grayMaskSmallThreshInv);
+    bitwise_and(faceMaskSmall, faceMaskSmall, maskedFace, grayMaskSmallThresh);
+    bitwise_and(frameROI, frameROI, maskedFrame, grayMaskSmallThreshInv);
+    add(maskedFace, maskedFrame, frame(cv::Rect(x, y, w, h)));
   }
+
+  cinder::Surface mImageOutput = cinder::Surface(cinder::fromOcv(frame));
+  cinder::gl::TextureRef mTexOutput = cinder::gl::Texture2d::create(mImageOutput);
+  cinder::gl::color(1, 1, 1);
+  cinder::gl::draw(mTexOutput);
+
+
 
   mFaces.clear();
   faces.clear();
+  faces2.clear();
+
 }
 
 void MyApp::keyDown(KeyEvent event) {
