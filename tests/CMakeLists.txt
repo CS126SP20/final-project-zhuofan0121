@@ -9,11 +9,11 @@ file(GLOB SOURCE_LIST CONFIGURE_DEPENDS
 
 
 ci_make_app(
-        APP_NAME    test
+        APP_NAME test
         CINDER_PATH ${CINDER_PATH}
-        SOURCES     ${SOURCE_LIST}
-        LIBRARIES   mylibrary catch2
-        BLOCKS
+        SOURCES ${SOURCE_LIST}
+        LIBRARIES mylibrary catch2
+        BLOCKS opencv Cinder-OpenCV3
 )
 
 target_compile_features(test PRIVATE cxx_std_14)

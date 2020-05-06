@@ -29,8 +29,12 @@
    - Added mask to face during live video capture
    - Still need to resize the mask
    
- - **5/5/20** 
+ - **5/5/20** Fixed the size of mask
    - Figured out reason of resize's bug: mask image contains too much white margin
    - Tried to find parameters for the proper position of mask on face
    - Added several toggles to control drawing rectangle and mask
    - Included the "edge" sub-functionality
+   
+ - **5/6/20** Added test cases
+   - Changed variable names to c++ style
+   - Added comments

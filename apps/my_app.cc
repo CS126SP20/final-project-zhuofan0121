@@ -1,4 +1,4 @@
-// Copyright (c) 2020 [Your Name]. All rights reserved.
+// Copyright (c) 2020 [Zhuofan Jia]. All rights reserved.
 
 #include "my_app.h"
 
@@ -9,8 +9,6 @@
 
 #include "CinderOpenCV.h"
 #include "cinder/Surface.h"
-#include "cinder/gl/Texture.h"
-#include "cinder/gl/gl.h"
 
 namespace myapp {
 
@@ -21,7 +19,7 @@ using std::vector;
 float scalingFactor = 0.75;
 
 vector<string> mask_paths;
-int mask_index;
+int mask_index = -1;
 
 bool draw_rect;
 bool draw_mask;
@@ -33,15 +31,15 @@ MyApp::MyApp() {
       "/Users/jiazhuofan/CLionProjects/cinder_0.9.2_mac/my-projects/"
       "final-project-zhuofan0121/assets/mask-images/";
   mask_paths = {
-      t + "mask.jpg",        t + "mask-new.jpg",   t + "mask-new2.jpg",
-      t + "mask-new3.jpg",   t + "mask-new4.jpg",  t + "mask-new5.jpg",
-      t + "mask-new6.jpg",   t + "mask-new7.jpg",  t + "mask-new8.jpg",
-      t + "mask-new9.jpg",   t + "mask-new10.jpg", t + "mask-new11.jpg",
-      t + "mask-images.jpg", t + "mask-new13.jpeg"};
+      t + "mask.jpg",       t + "mask-new.jpg",   t + "mask-new2.jpg",
+      t + "mask-new3.jpg",  t + "mask-new4.jpg",  t + "mask-new5.jpg",
+      t + "mask-new6.jpg",  t + "mask-new7.jpg",  t + "mask-new8.jpg",
+      t + "mask-new9.jpg",  t + "mask-new10.jpg", t + "mask-new11.jpg",
+      t + "mask-new12.jpg", t + "mask-new13.jpeg"};
 }
 
 void MyApp::setup() {
-  mFaceDetector.load(getAssetPath("haarcascade_frontalface_alt.xml").string());
+  face_detector.load(getAssetPath("haarcascade_frontalface_alt.xml").string());
   cap = cv::VideoCapture(0);
   if (!cap.isOpened()) {
     std::cerr << "Error opening camera. Exiting!" << std::endl;
@@ -58,10 +56,10 @@ void MyApp::update() {
   if (start_mask) {
     cv::resize(frame, frame, cv::Size(), scalingFactor, scalingFactor,
                cv::INTER_AREA);
-    cvtColor(frame, frameGray, CV_BGR2GRAY);
-    equalizeHist(frameGray, frameGray);
-    mFaceDetector.detectMultiScale(frameGray, faces, 1.1, 2,
-                                   0 | cv::CASCADE_SCALE_IMAGE,
+    cvtColor(frame, frame_gray, CV_BGR2GRAY);
+    equalizeHist(frame_gray, frame_gray);
+    face_detector.detectMultiScale(frame_gray, faces, 1.1, 2,
+                                   0u | cv::CASCADE_SCALE_IMAGE,
                                    cv::Size(30, 30));
   }
 
@@ -77,43 +75,50 @@ void MyApp::draw() {
   cinder::gl::color(1, 1, 1);
 
   if (start_mask) {
-    for (int i = 0; i < faces.size(); i++) {
+    for (auto& face : faces) {
       if (draw_rect) {
-        cv::Rect faceRect(faces[i].x, faces[i].y, faces[i].width,
-                          faces[i].height);
+        cv::Rect faceRect(face.x, face.y, face.width, face.height);
         cv::rectangle(frame, faceRect, CV_RGB(0, 255, 0), 2);
       }
       if (draw_mask) {
-        int x = faces[i].x + int(0.1 * faces[i].width);
-        int y = faces[i].y + int(0.5 * faces[i].height);
-        int w = int(0.8 * faces[i].width);
-        int h = int(0.5 * faces[i].height);
+        int x = face.x + int(0.1 * face.width);
+        int y = face.y + int(0.5 * face.height);
+        int w = int(0.8 * face.width);
+        int h = int(0.5 * face.height);
 
-        frameROI = frame(cv::Rect(x, y, w, h));
-        cv::resize(mask, faceMaskSmall, cv::Size(w, h));
-        cvtColor(faceMaskSmall, grayMaskSmall, CV_BGR2GRAY);
-        threshold(grayMaskSmall, grayMaskSmallThresh, 230, 255,
+        // extract the specific rect
+        frame_roi = frame(cv::Rect(x, y, w, h));
+        // resize mask image
+        cv::resize(mask, face_mask_small, cv::Size(w, h));
+        // convert mask image to gray
+        cvtColor(face_mask_small, gray_mask_small, CV_BGR2GRAY);
+        // change pixels greater than 230 to 0 (black) and smaller 230 to 255
+        // (white)
+        threshold(gray_mask_small, gray_mask_small_thresh, 230, 255,
                   CV_THRESH_BINARY_INV);
-        bitwise_not(grayMaskSmallThresh, grayMaskSmallThreshInv);
-        bitwise_and(faceMaskSmall, faceMaskSmall, maskedFace,
-                    grayMaskSmallThresh);
-        bitwise_and(frameROI, frameROI, maskedFrame, grayMaskSmallThreshInv);
-        add(maskedFace, maskedFrame, frame(cv::Rect(x, y, w, h)));
+        // invert the above image
+        bitwise_not(gray_mask_small_thresh, gray_mask_small_thresh_inv);
+        // find the margin of mask
+        bitwise_and(face_mask_small, face_mask_small, masked_face,
+                    gray_mask_small_thresh);
+        // add mask
+        bitwise_and(frame_roi, frame_roi, masked_frame,
+                    gray_mask_small_thresh_inv);
+        // add to original image
+        add(masked_face, masked_frame, frame(cv::Rect(x, y, w, h)));
       }
     }
 
-    cinder::Surface mImageOutput = cinder::Surface(cinder::fromOcv(frame));
-    cinder::gl::TextureRef mTexOutput =
-        cinder::gl::Texture2d::create(mImageOutput);
+    image_output = cinder::Surface(cinder::fromOcv(frame));
+    tex_output = cinder::gl::Texture2d::create(image_output);
     cinder::gl::color(1, 1, 1);
-    cinder::gl::draw(mTexOutput);
+    cinder::gl::draw(tex_output);
   }
 
   if (start_edge) {
-    cinder::Surface mImageOutput = cinder::Surface(cinder::fromOcv(edges));
-    cinder::gl::TextureRef mTexOutput =
-        cinder::gl::Texture2d::create(mImageOutput);
-    cinder::gl::draw(mTexOutput);
+    image_output = cinder::Surface(cinder::fromOcv(edges));
+    tex_output = cinder::gl::Texture2d::create(image_output);
+    cinder::gl::draw(tex_output);
   }
 
   faces.clear();
@@ -136,11 +141,11 @@ void MyApp::keyDown(KeyEvent event) {
 
   // Change to a different mask when the user presses the 'c' key.
   if (event.getChar() == 'c') {
+    mask_index = (mask_index + 1) % (int)mask_paths.size();
     mask = cv::imread(mask_paths[mask_index]);
     if (!mask.data) {
       std::cerr << "Error loading mask image. Exiting!" << std::endl;
     }
-    mask_index = (mask_index + 1) % (int)mask_paths.size();
   }
 
   // Toggle rectangle on face when the user presses the 'r' key.

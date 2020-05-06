@@ -10,7 +10,8 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/objdetect/objdetect.hpp>
 
-#include "cinder/Capture.h"
+#include "cinder/gl/Texture.h"
+#include "cinder/gl/gl.h"
 
 namespace myapp {
 
@@ -26,14 +27,16 @@ class MyApp : public cinder::app::App {
 
  private:
   cv::VideoCapture cap;
-  cv::CascadeClassifier mFaceDetector;
+  cv::CascadeClassifier face_detector;
   std::vector<cv::Rect> faces;
   Mat mask;
-  Mat frame, frameGray;
-  Mat frameROI, faceMaskSmall;
-  Mat grayMaskSmall, grayMaskSmallThresh, grayMaskSmallThreshInv;
-  Mat maskedFace, maskedFrame;
+  Mat frame, frame_gray;
+  Mat frame_roi, face_mask_small;
+  Mat gray_mask_small, gray_mask_small_thresh, gray_mask_small_thresh_inv;
+  Mat masked_face, masked_frame;
   Mat edges;
+  cinder::Surface image_output;
+  cinder::gl::TextureRef tex_output;
 };
 
 }  // namespace myapp
