@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "CinderOpenCV.h"
+#include "cinder/ImageIo.h"
 #include "cinder/Surface.h"
 
 namespace myapp {
@@ -25,6 +26,7 @@ bool draw_rect;
 bool draw_mask;
 bool start_mask = true;
 bool start_edge;
+bool write_image;
 
 MyApp::MyApp() {
   string t =
@@ -113,12 +115,28 @@ void MyApp::draw() {
     tex_output = cinder::gl::Texture2d::create(image_output);
     cinder::gl::color(1, 1, 1);
     cinder::gl::draw(tex_output);
+
+    if (write_image) {
+      cinder::fs::path file_path = getSaveFilePath();
+      if (!file_path.empty()) {
+        cinder::writeImage(file_path, image_output);
+      }
+      write_image = false;
+    }
   }
 
   if (start_edge) {
     image_output = cinder::Surface(cinder::fromOcv(edges));
     tex_output = cinder::gl::Texture2d::create(image_output);
     cinder::gl::draw(tex_output);
+
+    if (write_image) {
+      cinder::fs::path file_path = getSaveFilePath();
+      if (!file_path.empty()) {
+        cinder::writeImage(file_path, image_output);
+      }
+      write_image = false;
+    }
   }
 
   faces.clear();
@@ -168,6 +186,11 @@ void MyApp::keyDown(KeyEvent event) {
   if (event.getChar() == 'o') {
     start_mask = false;
     start_edge = true;
+  }
+
+  // Press 'w' to save the current window image.
+  if (event.getChar() == 'w') {
+    write_image = true;
   }
 }
 

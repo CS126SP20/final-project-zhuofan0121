@@ -38,3 +38,4 @@
  - **5/6/20** Added test cases
    - Changed variable names to c++ style
    - Added comments
+   - Added screenshot functionality
