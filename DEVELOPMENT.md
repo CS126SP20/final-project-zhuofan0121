@@ -39,3 +39,4 @@
    - Changed variable names to c++ style
    - Added comments
    - Added screenshot functionality
+   - Enabled image upload

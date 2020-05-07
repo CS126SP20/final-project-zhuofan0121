@@ -27,6 +27,10 @@ bool draw_mask;
 bool start_mask = true;
 bool start_edge;
 bool write_image;
+bool load_image;
+bool upload = true;
+
+cinder::fs::path open_file_path;
 
 MyApp::MyApp() {
   string t =
@@ -54,7 +58,16 @@ void MyApp::setup() {
 }
 
 void MyApp::update() {
-  cap >> frame;
+  if (load_image) {
+    if (upload) {
+      open_file_path = getOpenFilePath();
+      upload = false;
+    }
+    frame = cv::imread(open_file_path.string());
+  } else {
+    cap >> frame;
+  }
+
   if (start_mask) {
     cv::resize(frame, frame, cv::Size(), scalingFactor, scalingFactor,
                cv::INTER_AREA);
@@ -191,6 +204,12 @@ void MyApp::keyDown(KeyEvent event) {
   // Press 'w' to save the current window image.
   if (event.getChar() == 'w') {
     write_image = true;
+  }
+
+  // Press 'l' to load an image from path
+  if (event.getChar() == 'l') {
+    load_image = true;
+    upload = true;
   }
 }
 
