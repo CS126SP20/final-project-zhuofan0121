@@ -5,9 +5,6 @@ Course: CS 126 - Spring 2020
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![docs](https://img.shields.io/badge/docs-yes-brightgreen)](docs/README.md)
 
-Read [this document](https://cliutils.gitlab.io/modern-cmake/chapters/basics/structure.html) to understand the project
-layout.
-
 **Author**: Zhuofan Jia - [`zhuofan7@illinois.edu`](mailto:zhuofan7@illinois.edu)
 
 ---

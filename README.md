@@ -1,13 +1,9 @@
 # Final Project - Put On Your Mask
-![Image of Yaktocat](https://octodex.github.com/images/yaktocat.png)
 
 Course: CS 126 - Spring 2020
 
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![docs](https://img.shields.io/badge/docs-yes-brightgreen)](docs/README.md)
-
-Read [this document](https://cliutils.gitlab.io/modern-cmake/chapters/basics/structure.html) to understand the project
-layout.
 
 **Author**: Zhuofan Jia - [`zhuofan7@illinois.edu`](mailto:zhuofan7@illinois.edu)
 
@@ -26,40 +22,34 @@ face in the picture. The human face picture can either be taken by the
 computer's camera or uploaded by the user as an image file. After the mask is
 generated, the user can take a screenshot and use it in any way he or she likes.
 
-**Personal Background**
+**Getting Started**
 
-I do not have that much experience on such project except the experience I get from
-the snake assignment.
-Having spent a little time exploring the Cinder framework, I find that it integrates
-a lot of interesting blocks and I am quite interested in the OpenCV's face
-detection functionality. The reason why I would like to do this project is that
-I think it will be interesting. When the epidemic starts, my friends all changed their avatars on their social
-media into people with masks by using some type of apps. They have to select the image of 
-mask and manually adjust positions to add on the face. I think it will be great
-if I can make the mask automatically added.
+This project is based on MacOS CLion and will use the [Cinder](https://libcinder.org) framework. 
+You can download the latest version Cinder for your platform [here](https://libcinder.org/download).
+The latest version is v0.9.2.
+Here is a basic tutorial on how to develop Cinder projects:
+[https://libcinder.org/docs/guides/tour/hello_cinder_chapter1.html](https://libcinder.org/docs/guides/tour/hello_cinder_chapter1.html)
+Here is some documentation:
+[https://libcinder.org/docs/reference/index.html](https://libcinder.org/docs/reference/index.html)
+
+**Setting up Cinder**
+
+* Download Cinder (v0.9.2) for your platform. Extract the downloaded item into a folder. 
+I’ll call this folder ~/Cinder throughout the write-up.
+* Open the ~/Cinder folder in CLion and click the green build button. This will build libcinder. 
+You only need to do this once per machine. This build might take a while.
+* Create a directory, say my-projects in ~/Cinder. Clone the this project into this folder.
+* Open the project in CLion, set the target to cinder-myapp and click the run button.
 
 **External Libraries**
 
 I used the Cinder Block [OpenCV3](https://github.com/cinder/Cinder-OpenCV3)
 and also the library [OpenCV](https://github.com/opencv/opencv)
 
-**Rough Timeline**
-
-* By the end of the first week, I should complete setting up the whole project and
-the process of taking selfies or loading pictures. I should start working on 
-the face detection process.
-* By the end of the second week, I should complete the face detection and should
-figure out where to add mask image. I should start working on adding image to 
-the face.
-* By the end of the third week, I should finish adding masks to the faces and 
-finalize the whole project.
-
 **Stretch Goals**
 
-If there is still time remaining after I finish the above goals, here are some
-stretch goals I can implement.
-* Use a video stream from camera and process each frame to track faces of 
-people and add masks in real time.
+In the future, I would like to add the following things:
+* Add buttons to the initial window that users can click and jump to corresponding functionality.
 * Create an image gallery in 3D with processed pictures in it. You can switch
 left and right to see each picture in the gallery.
  
