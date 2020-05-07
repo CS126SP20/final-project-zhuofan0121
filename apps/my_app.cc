@@ -200,7 +200,7 @@ void MyApp::keyDown(KeyEvent event) {
     write_image = true;
   }
 
-  // Press 'l' to load an image from path
+  // Press 'l' to load an image from path.
   if (event.getChar() == 'l') {
     load_image = true;
     upload = true;
