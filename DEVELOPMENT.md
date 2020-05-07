@@ -40,3 +40,4 @@
    - Added comments
    - Added screenshot functionality
    - Enabled image upload
+   - Wrote test case

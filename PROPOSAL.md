@@ -1,5 +1,4 @@
 # Final Project - Put On Your Mask
-![Image of Yaktocat](https://octodex.github.com/images/yaktocat.png)
 
 Course: CS 126 - Spring 2020
 
