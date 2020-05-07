@@ -10,7 +10,7 @@ Course: CS 126 - Spring 2020
 *Put On Your Mask* is an app which is able to add a mask image lively to the video captured by your camera on the computer.
 You can also upload an image.
 
-keyboard shortcuts:
+Keyboard shortcuts:
 * Press 'esc' to quit full screen or quit app.
 * Press 'f' to toggle full screen.
 * Press 'c' to change to a different mask.
@@ -22,7 +22,7 @@ keyboard shortcuts:
 * Press 'l' to load an image from path.
 ---
 
-###Project Overview
+### Project Overview
 
 I propose to design and implement a project which has some educational 
 meanings but can also give users some entertainment 
@@ -35,7 +35,7 @@ face in the picture. The human face picture can either be taken by the
 computer's camera or uploaded by the user as an image file. After the mask is
 generated, the user can take a screenshot and use it in any way he or she likes.
 
-###Getting Started
+### Getting Started
 
 This project uses C++. You can install CLion.
 [Install CLion](https://www.jetbrains.com/clion/)
